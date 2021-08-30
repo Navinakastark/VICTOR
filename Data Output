@@ -1,0 +1,57 @@
+#include <SPI.h>
+#include <nRF24L01.h>
+#include <RF24.h>
+RF24 radio(8,9); // CE, CSN
+const byte addressTX[6] = "NAVIN";
+const byte addressRX[6] = "00001";
+char xyData[32] = "";
+char receivedData[32] = "";
+String xAxis, yAxis;
+int distance,distanceInch;
+
+void setup() {
+  Serial.begin(9600);
+  radio.begin();
+  radio.openWritingPipe(addressTX);
+  radio.setPALevel(RF24_PA_MIN);
+  radio.openReadingPipe(0,addressRX);
+  
+   
+}
+void loop() {
+  
+
+  xAxis = analogRead(A1); // Read Joysticks X-axis
+  yAxis = analogRead(A0); // Read Joysticks Y-axis
+  
+  // X value
+  xAxis.toCharArray(xyData, 5); // Put the String (X Value) into a character array
+  radio.write(&xyData, sizeof(xyData)); // Send the array data (X value) to the other NRF24L01 modile
+  // Y value
+  yAxis.toCharArray(xyData, 5);
+  radio.write(&xyData, sizeof(xyData));
+  radio.startListening();
+  
+  
+  if (radio.available()){
+     // Go and read the data and put it into that variable
+    radio.read(&receivedData, sizeof(receivedData));
+    distance = atoi(&receivedData[0]); // Convert the data from the character array (received X value) into integer
+    delay(10);
+    distanceInch= atoi(&receivedData[1]); // Convert the data from the character array (received X value) into integer
+    delay(10);
+    Serial.print("Distance of the Intruder in cm ");
+    Serial.println(distance);
+    Serial.print("Distance in the Intruder in inch");
+    Serial.println(distanceInch);
+    char text[32] = "";
+    radio.read(&text, sizeof(text));
+    Serial.println(text);
+    char text1[32] = "";
+    radio.read(&text1, sizeof(text1));
+    Serial.println(text1);
+    char text2[32] = "";
+    radio.read(&text2, sizeof(text2));
+    Serial.println(text2);
+  }
+}
