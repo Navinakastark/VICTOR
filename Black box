@@ -1,0 +1,38 @@
+// CONTROL JOYSTICK TX
+#include <SPI.h>
+#include <nRF24L01.h>
+#include <RF24.h>
+RF24 radio(8 ,9); // CSN, CE
+const byte address[6] = "NAVIN";
+char xyData[32] = "";
+String xAxis, yAxis;
+String xAxis1;
+
+
+
+void setup() {
+  Serial.begin(9600);
+  radio.begin();
+  radio.openWritingPipe(address);
+  radio.setPALevel(RF24_PA_MIN);
+  radio.stopListening();
+
+   
+}
+
+void loop() {
+  xAxis = analogRead(A1); // Read Joysticks X-axis
+  yAxis = analogRead(A0); // Read Joysticks Y-axis
+  xAxis1 = analogRead(A2); // Read Joysticks X-axis
+  
+  
+  // X value
+  xAxis.toCharArray(xyData, 5); // Put the String (X Value) into a character array
+  radio.write(&xyData, sizeof(xyData)); // Send the array data (X value) to the other NRF24L01 modile
+  // Y value
+  yAxis.toCharArray(xyData, 5);
+  radio.write(&xyData, sizeof(xyData));
+  //servo
+   xAxis1.toCharArray(xyData, 5); // Put the String (X Value) into a character array
+  radio.write(&xyData, sizeof(xyData)); // Send the array data (X value) to the other NRF24L01 modile
+}
